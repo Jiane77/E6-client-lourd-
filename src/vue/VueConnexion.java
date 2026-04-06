@@ -24,17 +24,20 @@ public class VueConnexion extends JFrame implements ActionListener, KeyListener 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
         this.setLayout(null);
-        this.getContentPane().setBackground(Color.gray);
+        this.getContentPane().setBackground(Color.decode("#165763"));
 
-        // LOGO
         ImageIcon uneImage = new ImageIcon("src/images/logo.png");
-        JLabel lbLogo = new JLabel(uneImage);
+        Image img = uneImage.getImage();
+        Image imgScale = img.getScaledInstance(250, 200, Image.SCALE_SMOOTH);
+        ImageIcon imageRedimensionnee = new ImageIcon(imgScale);
+
+        JLabel lbLogo = new JLabel(imageRedimensionnee);
         lbLogo.setBounds(25, 20, 250, 200);
         this.add(lbLogo);
 
         // PANEL FORM
         this.panelForm.setBounds(25, 260, 250, 160);
-        this.panelForm.setBackground(Color.gray);
+        this.panelForm.setBackground(Color.decode("#165763"));
         this.panelForm.setLayout(new GridLayout(3, 2, 5, 10));
 
         this.panelForm.add(new JLabel("Email :"));
