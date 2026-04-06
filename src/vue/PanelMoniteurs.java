@@ -1,9 +1,7 @@
 package vue;
 
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.ArrayList;
 
 import javax.swing.*;
@@ -21,6 +19,9 @@ public class PanelMoniteurs extends PanelPrincipal implements ActionListener {
     private JTextField txtEmail = new JTextField();
     private JTextField txtTel = new JTextField();
 
+    private JTextField txtFiltre = new JTextField();
+    private JButton btFiltrer = new JButton("Filtrer");
+
     private JButton btAnnuler = new JButton("Annuler");
     private JButton btValider = new JButton("Valider");
     private JButton btSupprimer = new JButton("Supprimer");
@@ -33,11 +34,23 @@ public class PanelMoniteurs extends PanelPrincipal implements ActionListener {
     private JLabel lbNBMoniteurs = new JLabel("");
 
     public PanelMoniteurs(String titre) {
+
         super(titre);
 
-        this.panelForm.setBounds(50, 100, 300, 200);
+        // ================= FILTRE =================
+        JPanel panelFiltre = new JPanel(new GridLayout(1, 3, 5, 5));
+        panelFiltre.setBounds(450, 80, 460, 30);
+
+        panelFiltre.add(new JLabel("Filtrer :"));
+        panelFiltre.add(txtFiltre);
+        panelFiltre.add(btFiltrer);
+
+        this.add(panelFiltre);
+
+        // ================= FORM =================
+        this.panelForm.setBounds(50, 100, 300, 220);
         this.panelForm.setBackground(Color.gray);
-        this.panelForm.setLayout(new GridLayout(5, 2, 10, 10));
+        this.panelForm.setLayout(new GridLayout(8, 2, 10, 10));
 
         this.panelForm.add(new JLabel("Nom :"));
         this.panelForm.add(this.txtNom);
@@ -51,36 +64,60 @@ public class PanelMoniteurs extends PanelPrincipal implements ActionListener {
         this.panelForm.add(new JLabel("Tel :"));
         this.panelForm.add(this.txtTel);
 
-        this.panelForm.add(this.btAnnuler);
-        this.panelForm.add(this.btValider);
-        this.panelForm.add(this.btSupprimer);
-        this.panelForm.add(this.btModifier);
+        this.panelForm.add(btAnnuler);
+        this.panelForm.add(btValider);
+        this.panelForm.add(btSupprimer);
+        this.panelForm.add(btModifier);
 
         this.add(this.panelForm);
 
-        btAnnuler.addActionListener(this);
-        btValider.addActionListener(this);
-        btModifier.addActionListener(this);
-        btSupprimer.addActionListener(this);
+        btSupprimer.setEnabled(false);
+        btModifier.setEnabled(false);
 
+        // ================= TABLE =================
         String entetes[] = {"ID", "Nom", "Prenom", "Email", "Tel"};
 
-        this.unTableau = new Tableau(obtenirDonnees(), entetes);
+        this.unTableau = new Tableau(obtenirDonnees(""), entetes);
         this.tableMoniteurs = new JTable(this.unTableau);
 
         this.scrollMoniteurs = new JScrollPane(this.tableMoniteurs);
         this.scrollMoniteurs.setBounds(450, 120, 450, 240);
         this.add(this.scrollMoniteurs);
 
+        // ================= CLICK TABLE =================
+        tableMoniteurs.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+
+                int ligne = tableMoniteurs.getSelectedRow();
+
+                txtNom.setText(unTableau.getValueAt(ligne, 1).toString());
+                txtPrenom.setText(unTableau.getValueAt(ligne, 2).toString());
+                txtEmail.setText(unTableau.getValueAt(ligne, 3).toString());
+                txtTel.setText(unTableau.getValueAt(ligne, 4).toString());
+
+                btModifier.setEnabled(true);
+                btSupprimer.setEnabled(true);
+            }
+        });
+
+        // ================= LABEL =================
         this.lbNBMoniteurs.setBounds(450, 380, 300, 20);
         this.add(this.lbNBMoniteurs);
 
         actualiserLabel();
+
+        // ================= EVENTS =================
+        btAnnuler.addActionListener(this);
+        btValider.addActionListener(this);
+        btModifier.addActionListener(this);
+        btSupprimer.addActionListener(this);
+        btFiltrer.addActionListener(this);
     }
 
-    private Object[][] obtenirDonnees() {
+    // ================= DATA =================
+    private Object[][] obtenirDonnees(String filtre) {
 
-        ArrayList<Moniteur> lesMoniteurs = Controleur.selectAllMoniteurs("");
+        ArrayList<Moniteur> lesMoniteurs = Controleur.selectAllMoniteurs(filtre);
 
         Object[][] matrice = new Object[lesMoniteurs.size()][5];
 
@@ -99,11 +136,16 @@ public class PanelMoniteurs extends PanelPrincipal implements ActionListener {
         return matrice;
     }
 
+    // ================= ACTION =================
     @Override
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == btAnnuler) {
             viderChamps();
+        }
+
+        else if (e.getSource() == btFiltrer) {
+            unTableau.setDonnees(obtenirDonnees(txtFiltre.getText()));
         }
 
         else if (e.getSource() == btValider) {
@@ -120,7 +162,8 @@ public class PanelMoniteurs extends PanelPrincipal implements ActionListener {
             );
 
             Controleur.insertMoniteur(m);
-            unTableau.setDonnees(obtenirDonnees());
+
+            unTableau.setDonnees(obtenirDonnees(""));
             actualiserLabel();
             viderChamps();
         }
@@ -128,11 +171,14 @@ public class PanelMoniteurs extends PanelPrincipal implements ActionListener {
         else if (e.getSource() == btSupprimer) {
 
             int ligne = tableMoniteurs.getSelectedRow();
+
+            if (ligne == -1) return;
+
             int id = Integer.parseInt(unTableau.getValueAt(ligne, 0).toString());
 
             Controleur.deleteMoniteur(id);
 
-            unTableau.setDonnees(obtenirDonnees());
+            unTableau.setDonnees(obtenirDonnees(""));
             actualiserLabel();
             viderChamps();
         }
@@ -140,6 +186,9 @@ public class PanelMoniteurs extends PanelPrincipal implements ActionListener {
         else if (e.getSource() == btModifier) {
 
             int ligne = tableMoniteurs.getSelectedRow();
+
+            if (ligne == -1) return;
+
             int id = Integer.parseInt(unTableau.getValueAt(ligne, 0).toString());
 
             Moniteur m = new Moniteur(
@@ -156,19 +205,25 @@ public class PanelMoniteurs extends PanelPrincipal implements ActionListener {
 
             Controleur.updateMoniteur(m);
 
-            unTableau.setDonnees(obtenirDonnees());
+            unTableau.setDonnees(obtenirDonnees(""));
             actualiserLabel();
             viderChamps();
         }
     }
 
+    // ================= RESET =================
     public void viderChamps() {
+
         txtNom.setText("");
         txtPrenom.setText("");
         txtEmail.setText("");
         txtTel.setText("");
+
+        btModifier.setEnabled(false);
+        btSupprimer.setEnabled(false);
     }
 
+    // ================= LABEL =================
     public void actualiserLabel() {
         lbNBMoniteurs.setText("Nombre de moniteurs : " + unTableau.getRowCount());
     }
