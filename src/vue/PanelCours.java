@@ -1,9 +1,8 @@
+
 package vue;
 
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.sql.Date;
 import java.sql.Time;
 import java.util.ArrayList;
@@ -18,9 +17,9 @@ public class PanelCours extends PanelPrincipal implements ActionListener {
 
     private JPanel panelForm = new JPanel();
 
-    private JTextField txtDate = new JTextField();        // format: 2026-02-20
-    private JTextField txtHeureDebut = new JTextField();  // format: 10:00:00
-    private JTextField txtHeureFin = new JTextField();    // format: 11:00:00
+    private JTextField txtDate = new JTextField();
+    private JTextField txtHeureDebut = new JTextField();
+    private JTextField txtHeureFin = new JTextField();
     private JTextField txtStatut = new JTextField();
 
     private JTextField txtVehicule = new JTextField();
@@ -33,161 +32,153 @@ public class PanelCours extends PanelPrincipal implements ActionListener {
     private JButton btModifier = new JButton("Modifier");
 
     private JTable tableCours;
-    private JScrollPane scrollCours;
+    private JScrollPane scroll;
     private Tableau unTableau;
 
-    private JLabel lbNBCours = new JLabel("");
+    private JTextField txtFiltre = new JTextField();
+    private JButton btFiltrer = new JButton("Filtrer");
+
+    private JLabel lbNb = new JLabel("");
 
     public PanelCours(String titre) {
+
         super(titre);
 
-        this.panelForm.setBounds(50, 100, 320, 300);
-        this.panelForm.setBackground(Color.gray);
-        this.panelForm.setLayout(new GridLayout(8, 2, 10, 10));
+        // ================= FILTRE =================
+        JPanel panelFiltre = new JPanel(new GridLayout(1, 3, 5, 5));
+        panelFiltre.setBounds(450, 80, 460, 30);
 
-        this.panelForm.add(new JLabel("Date (YYYY-MM-DD) :"));
-        this.panelForm.add(this.txtDate);
+        panelFiltre.add(new JLabel("Filtrer :"));
+        panelFiltre.add(txtFiltre);
+        panelFiltre.add(btFiltrer);
 
-        this.panelForm.add(new JLabel("Heure début :"));
-        this.panelForm.add(this.txtHeureDebut);
+        this.add(panelFiltre);
 
-        this.panelForm.add(new JLabel("Heure fin :"));
-        this.panelForm.add(this.txtHeureFin);
+        // ================= FORM =================
+        panelForm.setBounds(55, 80, 200, 250);
+        panelForm.setLayout(new GridLayout(10, 2, 10, 10));
 
-        this.panelForm.add(new JLabel("Statut :"));
-        this.panelForm.add(this.txtStatut);
+        panelForm.add(new JLabel("Date :"));
+        panelForm.add(txtDate);
 
-        this.panelForm.add(new JLabel("ID Véhicule :"));
-        this.panelForm.add(this.txtVehicule);
+        panelForm.add(new JLabel("Début :"));
+        panelForm.add(txtHeureDebut);
 
-        this.panelForm.add(new JLabel("ID Moniteur :"));
-        this.panelForm.add(this.txtMoniteur);
+        panelForm.add(new JLabel("Fin :"));
+        panelForm.add(txtHeureFin);
 
-        this.panelForm.add(new JLabel("ID Candidat :"));
-        this.panelForm.add(this.txtCandidat);
+        panelForm.add(new JLabel("Statut :"));
+        panelForm.add(txtStatut);
 
-        this.panelForm.add(this.btAnnuler);
-        this.panelForm.add(this.btValider);
-        this.panelForm.add(this.btSupprimer);
-        this.panelForm.add(this.btModifier);
+        panelForm.add(new JLabel("Véhicule :"));
+        panelForm.add(txtVehicule);
 
-        this.add(this.panelForm);
+        panelForm.add(new JLabel("Moniteur :"));
+        panelForm.add(txtMoniteur);
 
+        panelForm.add(new JLabel("Candidat :"));
+        panelForm.add(txtCandidat);
+
+        panelForm.add(btAnnuler);
+        panelForm.add(btValider);
+        panelForm.add(btSupprimer);
+        panelForm.add(btModifier);
+
+        this.add(panelForm);
+
+        btSupprimer.setEnabled(false);
+        btModifier.setEnabled(false);
+
+        // ================= TABLE =================
+        String[] entetes = {
+                "ID", "Date", "Début", "Fin",
+                "Statut", "Vehicule", "Moniteur", "Candidat"
+        };
+
+        unTableau = new Tableau(obtenirDonnees(""), entetes);
+        tableCours = new JTable(unTableau);
+
+        scroll = new JScrollPane(tableCours);
+        scroll.setBounds(350, 120, 600, 200);
+        this.add(scroll);
+
+        // ================= CLICK TABLE =================
+        tableCours.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+
+                int ligne = tableCours.getSelectedRow();
+
+                txtDate.setText(unTableau.getValueAt(ligne, 1).toString());
+                txtHeureDebut.setText(unTableau.getValueAt(ligne, 2).toString());
+                txtHeureFin.setText(unTableau.getValueAt(ligne, 3).toString());
+                txtStatut.setText(unTableau.getValueAt(ligne, 4).toString());
+                txtVehicule.setText(unTableau.getValueAt(ligne, 5).toString());
+                txtMoniteur.setText(unTableau.getValueAt(ligne, 6).toString());
+                txtCandidat.setText(unTableau.getValueAt(ligne, 7).toString());
+
+                btModifier.setEnabled(true);
+                btSupprimer.setEnabled(true);
+            }
+        });
+
+        // ================= LABEL =================
+        lbNb.setBounds(450, 380, 300, 30);
+        this.add(lbNb);
+
+        lbNb.setText("Nombre cours : " + unTableau.getRowCount());
+
+        // ================= EVENTS =================
         btAnnuler.addActionListener(this);
         btValider.addActionListener(this);
         btModifier.addActionListener(this);
         btSupprimer.addActionListener(this);
-
-        String entetes[] = {"ID", "Date", "Début", "Fin", "Statut", "Vehicule", "Moniteur", "Candidat"};
-
-        this.unTableau = new Tableau(obtenirDonnees(), entetes);
-        this.tableCours = new JTable(this.unTableau);
-
-        this.scrollCours = new JScrollPane(this.tableCours);
-        this.scrollCours.setBounds(420, 120, 600, 250);
-        this.add(this.scrollCours);
-
-        this.lbNBCours.setBounds(420, 380, 300, 20);
-        this.add(this.lbNBCours);
-
-        actualiserLabel();
+        btFiltrer.addActionListener(this);
     }
 
-    private Object[][] obtenirDonnees() {
+    // ================= DATA =================
+    private Object[][] obtenirDonnees(String filtre) {
 
-        ArrayList<Cours> lesCours = Controleur.selectAllCours("");
+        ArrayList<Cours> list = Controleur.selectAllCours(filtre);
 
-        Object[][] matrice = new Object[lesCours.size()][8];
+        Object[][] data = new Object[list.size()][8];
 
         int i = 0;
-        for (Cours c : lesCours) {
 
-            matrice[i][0] = c.getIdcours();
-            matrice[i][1] = c.getDateCours();
-            matrice[i][2] = c.getHeureDebut();
-            matrice[i][3] = c.getHeureFin();
-            matrice[i][4] = c.getStatut();
-            matrice[i][5] = c.getIdvehicule();
-            matrice[i][6] = c.getIdmoniteur();
-            matrice[i][7] = c.getIdcandidat();
+        for (Cours c : list) {
+
+            data[i][0] = c.getIdcours();
+            data[i][1] = c.getDateCours();
+            data[i][2] = c.getHeureDebut();
+            data[i][3] = c.getHeureFin();
+            data[i][4] = c.getStatut();
+            data[i][5] = c.getIdvehicule();
+            data[i][6] = c.getIdmoniteur();
+            data[i][7] = c.getIdcandidat();
 
             i++;
         }
 
-        return matrice;
+        return data;
     }
 
-    @Override
+    // ================= ACTIONS =================
     public void actionPerformed(ActionEvent e) {
 
-        if (e.getSource() == btAnnuler) {
-            viderChamps();
-        }
+        if (e.getSource() == btAnnuler) vider();
 
-        else if (e.getSource() == btValider) {
+        else if (e.getSource() == btValider) insert();
 
-            try {
-                Cours c = new Cours(
-                        Date.valueOf(txtDate.getText()),
-                        Time.valueOf(txtHeureDebut.getText()),
-                        Time.valueOf(txtHeureFin.getText()),
-                        txtStatut.getText(),
-                        Integer.parseInt(txtVehicule.getText()),
-                        Integer.parseInt(txtMoniteur.getText()),
-                        Integer.parseInt(txtCandidat.getText())
-                );
+        else if (e.getSource() == btModifier) update();
 
-                Controleur.insertCours(c);
-                unTableau.setDonnees(obtenirDonnees());
-                actualiserLabel();
-                viderChamps();
+        else if (e.getSource() == btSupprimer) delete();
 
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erreur de saisie !");
-            }
-        }
-
-        else if (e.getSource() == btSupprimer) {
-
-            int ligne = tableCours.getSelectedRow();
-            int id = Integer.parseInt(unTableau.getValueAt(ligne, 0).toString());
-
-            Controleur.deleteCours(id);
-
-            unTableau.setDonnees(obtenirDonnees());
-            actualiserLabel();
-        }
-
-        else if (e.getSource() == btModifier) {
-
-            int ligne = tableCours.getSelectedRow();
-            int id = Integer.parseInt(unTableau.getValueAt(ligne, 0).toString());
-
-            try {
-                Cours c = new Cours(
-                        id,
-                        Date.valueOf(txtDate.getText()),
-                        Time.valueOf(txtHeureDebut.getText()),
-                        Time.valueOf(txtHeureFin.getText()),
-                        txtStatut.getText(),
-                        Integer.parseInt(txtVehicule.getText()),
-                        Integer.parseInt(txtMoniteur.getText()),
-                        Integer.parseInt(txtCandidat.getText())
-                );
-
-                Controleur.updateCours(c);
-
-                unTableau.setDonnees(obtenirDonnees());
-                actualiserLabel();
-                viderChamps();
-
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erreur modification !");
-            }
-        }
+        else if (e.getSource() == btFiltrer)
+            unTableau.setDonnees(obtenirDonnees(txtFiltre.getText()));
     }
 
-    public void viderChamps() {
+    // ================= METHODS =================
+    public void vider() {
+
         txtDate.setText("");
         txtHeureDebut.setText("");
         txtHeureFin.setText("");
@@ -195,9 +186,85 @@ public class PanelCours extends PanelPrincipal implements ActionListener {
         txtVehicule.setText("");
         txtMoniteur.setText("");
         txtCandidat.setText("");
+
+        btModifier.setEnabled(false);
+        btSupprimer.setEnabled(false);
     }
 
-    public void actualiserLabel() {
-        lbNBCours.setText("Nombre de cours : " + unTableau.getRowCount());
+    public void insert() {
+
+        try {
+            Cours c = new Cours(
+                    Date.valueOf(txtDate.getText()),
+                    Time.valueOf(txtHeureDebut.getText()),
+                    Time.valueOf(txtHeureFin.getText()),
+                    txtStatut.getText(),
+                    Integer.parseInt(txtVehicule.getText()),
+                    Integer.parseInt(txtMoniteur.getText()),
+                    Integer.parseInt(txtCandidat.getText())
+            );
+
+            Controleur.insertCours(c);
+
+            JOptionPane.showMessageDialog(this, "Ajout réussi");
+
+            unTableau.setDonnees(obtenirDonnees(""));
+            lbNb.setText("Nombre cours : " + unTableau.getRowCount());
+
+            vider();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erreur insertion !");
+        }
+    }
+
+    public void update() {
+
+        int ligne = tableCours.getSelectedRow();
+        int id = Integer.parseInt(unTableau.getValueAt(ligne, 0).toString());
+
+        try {
+            Cours c = new Cours(
+                    id,
+                    Date.valueOf(txtDate.getText()),
+                    Time.valueOf(txtHeureDebut.getText()),
+                    Time.valueOf(txtHeureFin.getText()),
+                    txtStatut.getText(),
+                    Integer.parseInt(txtVehicule.getText()),
+                    Integer.parseInt(txtMoniteur.getText()),
+                    Integer.parseInt(txtCandidat.getText())
+            );
+
+            Controleur.updateCours(c);
+
+            JOptionPane.showMessageDialog(this, "Modifié");
+
+            unTableau.setDonnees(obtenirDonnees(""));
+            vider();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erreur modification !");
+        }
+    }
+
+    public void delete() {
+
+        int ligne = tableCours.getSelectedRow();
+        int id = Integer.parseInt(unTableau.getValueAt(ligne, 0).toString());
+
+        int rep = JOptionPane.showConfirmDialog(this,
+                "Supprimer ?",
+                "Confirmation",
+                JOptionPane.YES_NO_OPTION);
+
+        if (rep == JOptionPane.YES_OPTION) {
+
+            Controleur.deleteCours(id);
+
+            JOptionPane.showMessageDialog(this, "Supprimé");
+
+            unTableau.setDonnees(obtenirDonnees(""));
+            vider();
+        }
     }
 }
