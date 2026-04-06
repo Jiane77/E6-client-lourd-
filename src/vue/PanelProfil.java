@@ -31,9 +31,9 @@ public class PanelProfil extends PanelPrincipal implements ActionListener {
 
         super(titre);
 
-        // ================= INFOS =================
+        // INFOS
         txtInfos.setBounds(40, 100, 300, 200);
-        txtInfos.setBackground(Color.gray);
+        txtInfos.setBackground(Color.decode("#C1DFE6"));
         this.add(txtInfos);
 
         this.btModifier.setBounds(60, 320, 200, 20);
