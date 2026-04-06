@@ -40,9 +40,8 @@ public class PanelCandidats extends PanelPrincipal implements ActionListener {
         super(titre);
 
         // ================= FILTRE =================
-        JPanel panelFiltre = new JPanel();
+        JPanel panelFiltre = new JPanel(new GridLayout(1, 3, 5, 5));
         panelFiltre.setBounds(450, 80, 460, 30);
-        panelFiltre.setLayout(new GridLayout(1, 3));
 
         panelFiltre.add(new JLabel("Filtrer :"));
         panelFiltre.add(txtFiltre);
@@ -50,9 +49,9 @@ public class PanelCandidats extends PanelPrincipal implements ActionListener {
 
         this.add(panelFiltre);
 
-        // ================= FORM =================
-        panelForm.setBounds(50, 100, 300, 300);
-        panelForm.setLayout(new GridLayout(7, 2));
+        // ================= FORM (MODIF MINIMALE) =================
+        panelForm.setBounds(50, 100, 300, 320);
+        panelForm.setLayout(new GridLayout(11, 2, 10, 10));
 
         panelForm.add(new JLabel("Nom :"));
         panelForm.add(txtNom);
@@ -72,9 +71,9 @@ public class PanelCandidats extends PanelPrincipal implements ActionListener {
         panelForm.add(new JLabel("Adresse :"));
         panelForm.add(txtAdresse);
 
+        // 👉 ON GARDE EXACTEMENT TES BOUTONS ICI (IMPORTANT)
         panelForm.add(btAnnuler);
         panelForm.add(btValider);
-
         panelForm.add(btSupprimer);
         panelForm.add(btModifier);
 
@@ -125,7 +124,7 @@ public class PanelCandidats extends PanelPrincipal implements ActionListener {
         btFiltrer.addActionListener(this);
     }
 
-    // ================= DONNEES =================
+    // ================= DATA =================
     private Object[][] obtenirDonnees(String filtre) {
 
         ArrayList<Candidat> list = Controleur.selectAllCandidats(filtre);
@@ -152,25 +151,16 @@ public class PanelCandidats extends PanelPrincipal implements ActionListener {
     // ================= ACTIONS =================
     public void actionPerformed(ActionEvent e) {
 
-        if (e.getSource() == btAnnuler) {
-            vider();
-        }
+        if (e.getSource() == btAnnuler) vider();
 
-        else if (e.getSource() == btValider) {
-            insert();
-        }
+        else if (e.getSource() == btValider) insert();
 
-        else if (e.getSource() == btModifier) {
-            update();
-        }
+        else if (e.getSource() == btModifier) update();
 
-        else if (e.getSource() == btSupprimer) {
-            delete();
-        }
+        else if (e.getSource() == btSupprimer) delete();
 
-        else if (e.getSource() == btFiltrer || e.getSource() == txtFiltre) {
+        else if (e.getSource() == btFiltrer)
             unTableau.setDonnees(obtenirDonnees(txtFiltre.getText()));
-        }
     }
 
     // ================= METHODS =================
@@ -194,13 +184,11 @@ public class PanelCandidats extends PanelPrincipal implements ActionListener {
                 txtPrenom.getText(),
                 txtEmail.getText(),
                 txtMdp.getText(),
-                1, // premier_connexion
+                1,
                 txtTel.getText(),
                 txtAdresse.getText(),
-                0, // est_etudiant
-                null,
-                null,
-                null
+                0,
+                null, null, null
         );
 
         Controleur.insertCandidat(c);
@@ -208,7 +196,6 @@ public class PanelCandidats extends PanelPrincipal implements ActionListener {
         JOptionPane.showMessageDialog(this, "Ajout réussi");
 
         unTableau.setDonnees(obtenirDonnees(""));
-
         lbNb.setText("Nombre candidats : " + unTableau.getRowCount());
 
         vider();
@@ -229,9 +216,7 @@ public class PanelCandidats extends PanelPrincipal implements ActionListener {
                 txtTel.getText(),
                 txtAdresse.getText(),
                 0,
-                null,
-                null,
-                null
+                null, null, null
         );
 
         Controleur.updateCandidat(c);
@@ -253,7 +238,7 @@ public class PanelCandidats extends PanelPrincipal implements ActionListener {
                 "Confirmation",
                 JOptionPane.YES_NO_OPTION);
 
-        if (rep == 0) {
+        if (rep == JOptionPane.YES_OPTION) {
 
             Controleur.deleteCandidat(id);
 
