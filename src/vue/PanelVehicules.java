@@ -1,9 +1,7 @@
 package vue;
 
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.ArrayList;
 
 import javax.swing.*;
@@ -22,74 +20,114 @@ public class PanelVehicules extends PanelPrincipal implements ActionListener {
     private JTextField txtImage = new JTextField();
     private JTextField txtEtat = new JTextField();
 
+    private JTextField txtFiltre = new JTextField();
+    private JButton btFiltrer = new JButton("Filtrer");
+
     private JButton btAnnuler = new JButton("Annuler");
     private JButton btValider = new JButton("Valider");
     private JButton btSupprimer = new JButton("Supprimer");
     private JButton btModifier = new JButton("Modifier");
 
     private JTable tableVehicules;
-    private JScrollPane scrollVehicules;
+    private JScrollPane scroll;
     private Tableau unTableau;
 
     private JLabel lbNBVehicules = new JLabel("");
 
     public PanelVehicules(String titre) {
+
         super(titre);
 
-        this.panelForm.setBounds(50, 100, 300, 250);
-        this.panelForm.setBackground(Color.gray);
-        this.panelForm.setLayout(new GridLayout(6, 2, 10, 10));
+        // ================= FILTRE =================
+        JPanel panelFiltre = new JPanel(new GridLayout(1, 3, 5, 5));
+        panelFiltre.setBounds(450, 80, 460, 30);
 
-        this.panelForm.add(new JLabel("Marque :"));
-        this.panelForm.add(this.txtMarque);
+        panelFiltre.add(new JLabel("Filtrer :"));
+        panelFiltre.add(txtFiltre);
+        panelFiltre.add(btFiltrer);
 
-        this.panelForm.add(new JLabel("Modele :"));
-        this.panelForm.add(this.txtModele);
+        this.add(panelFiltre);
 
-        this.panelForm.add(new JLabel("Immatriculation :"));
-        this.panelForm.add(this.txtImmatriculation);
+        // ================= FORM =================
+        panelForm.setBounds(50, 100, 300, 260);
+        panelForm.setBackground(Color.gray);
+        panelForm.setLayout(new GridLayout(10, 2, 10, 10));
 
-        this.panelForm.add(new JLabel("Image :"));
-        this.panelForm.add(this.txtImage);
+        panelForm.add(new JLabel("Marque :"));
+        panelForm.add(txtMarque);
 
-        this.panelForm.add(new JLabel("Etat :"));
-        this.panelForm.add(this.txtEtat);
+        panelForm.add(new JLabel("Modele :"));
+        panelForm.add(txtModele);
 
-        this.panelForm.add(this.btAnnuler);
-        this.panelForm.add(this.btValider);
-        this.panelForm.add(this.btSupprimer);
-        this.panelForm.add(this.btModifier);
+        panelForm.add(new JLabel("Immatriculation :"));
+        panelForm.add(txtImmatriculation);
 
-        this.add(this.panelForm);
+        panelForm.add(new JLabel("Image :"));
+        panelForm.add(txtImage);
 
+        panelForm.add(new JLabel("Etat :"));
+        panelForm.add(txtEtat);
+
+        panelForm.add(btAnnuler);
+        panelForm.add(btValider);
+        panelForm.add(btSupprimer);
+        panelForm.add(btModifier);
+
+        this.add(panelForm);
+
+        btSupprimer.setEnabled(false);
+        btModifier.setEnabled(false);
+
+        // ================= TABLE =================
+        String[] entetes = {"ID", "Marque", "Modele", "Immatriculation", "Etat"};
+
+        unTableau = new Tableau(obtenirDonnees(""), entetes);
+        tableVehicules = new JTable(unTableau);
+
+        scroll = new JScrollPane(tableVehicules);
+        scroll.setBounds(450, 120, 500, 250);
+        this.add(scroll);
+
+        // ================= CLICK TABLE =================
+        tableVehicules.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+
+                int ligne = tableVehicules.getSelectedRow();
+
+                txtMarque.setText(unTableau.getValueAt(ligne, 1).toString());
+                txtModele.setText(unTableau.getValueAt(ligne, 2).toString());
+                txtImmatriculation.setText(unTableau.getValueAt(ligne, 3).toString());
+                txtEtat.setText(unTableau.getValueAt(ligne, 4).toString());
+
+                btModifier.setEnabled(true);
+                btSupprimer.setEnabled(true);
+            }
+        });
+
+        // ================= LABEL =================
+        lbNBVehicules.setBounds(450, 380, 300, 20);
+        this.add(lbNBVehicules);
+
+        actualiserLabel();
+
+        // ================= EVENTS =================
         btAnnuler.addActionListener(this);
         btValider.addActionListener(this);
         btModifier.addActionListener(this);
         btSupprimer.addActionListener(this);
-
-        String entetes[] = {"ID", "Marque", "Modele", "Immatriculation", "Etat"};
-
-        this.unTableau = new Tableau(obtenirDonnees(), entetes);
-        this.tableVehicules = new JTable(this.unTableau);
-
-        this.scrollVehicules = new JScrollPane(this.tableVehicules);
-        this.scrollVehicules.setBounds(450, 120, 500, 250);
-        this.add(this.scrollVehicules);
-
-        this.lbNBVehicules.setBounds(450, 380, 300, 20);
-        this.add(this.lbNBVehicules);
-
-        actualiserLabel();
+        btFiltrer.addActionListener(this);
     }
 
-    private Object[][] obtenirDonnees() {
+    // ================= DATA =================
+    private Object[][] obtenirDonnees(String filtre) {
 
-        ArrayList<Vehicule> lesVehicules = Controleur.selectAllVehicules("");
+        ArrayList<Vehicule> list = Controleur.selectAllVehicules(filtre);
 
-        Object[][] matrice = new Object[lesVehicules.size()][5];
+        Object[][] matrice = new Object[list.size()][5];
 
         int i = 0;
-        for (Vehicule v : lesVehicules) {
+
+        for (Vehicule v : list) {
 
             matrice[i][0] = v.getIdvehicule();
             matrice[i][1] = v.getMarque();
@@ -103,11 +141,16 @@ public class PanelVehicules extends PanelPrincipal implements ActionListener {
         return matrice;
     }
 
+    // ================= ACTION =================
     @Override
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == btAnnuler) {
             viderChamps();
+        }
+
+        else if (e.getSource() == btFiltrer) {
+            unTableau.setDonnees(obtenirDonnees(txtFiltre.getText()));
         }
 
         else if (e.getSource() == btValider) {
@@ -121,7 +164,8 @@ public class PanelVehicules extends PanelPrincipal implements ActionListener {
             );
 
             Controleur.insertVehicule(v);
-            unTableau.setDonnees(obtenirDonnees());
+
+            unTableau.setDonnees(obtenirDonnees(""));
             actualiserLabel();
             viderChamps();
         }
@@ -130,54 +174,56 @@ public class PanelVehicules extends PanelPrincipal implements ActionListener {
 
             int ligne = tableVehicules.getSelectedRow();
 
-            if (ligne >= 0) {
-                int id = Integer.parseInt(unTableau.getValueAt(ligne, 0).toString());
+            if (ligne == -1) return;
 
-                Controleur.deleteVehicule(id);
+            int id = Integer.parseInt(unTableau.getValueAt(ligne, 0).toString());
 
-                unTableau.setDonnees(obtenirDonnees());
-                actualiserLabel();
-                viderChamps();
-            } else {
-                JOptionPane.showMessageDialog(this, "Veuillez sélectionner un véhicule !");
-            }
+            Controleur.deleteVehicule(id);
+
+            unTableau.setDonnees(obtenirDonnees(""));
+            actualiserLabel();
+            viderChamps();
         }
 
         else if (e.getSource() == btModifier) {
 
             int ligne = tableVehicules.getSelectedRow();
 
-            if (ligne >= 0) {
-                int id = Integer.parseInt(unTableau.getValueAt(ligne, 0).toString());
+            if (ligne == -1) return;
 
-                Vehicule v = new Vehicule(
-                        id,
-                        txtMarque.getText(),
-                        txtModele.getText(),
-                        txtImmatriculation.getText(),
-                        txtImage.getText(),
-                        txtEtat.getText()
-                );
+            int id = Integer.parseInt(unTableau.getValueAt(ligne, 0).toString());
 
-                Controleur.updateVehicule(v);
+            Vehicule v = new Vehicule(
+                    id,
+                    txtMarque.getText(),
+                    txtModele.getText(),
+                    txtImmatriculation.getText(),
+                    txtImage.getText(),
+                    txtEtat.getText()
+            );
 
-                unTableau.setDonnees(obtenirDonnees());
-                actualiserLabel();
-                viderChamps();
-            } else {
-                JOptionPane.showMessageDialog(this, "Veuillez sélectionner un véhicule !");
-            }
+            Controleur.updateVehicule(v);
+
+            unTableau.setDonnees(obtenirDonnees(""));
+            actualiserLabel();
+            viderChamps();
         }
     }
 
+    // ================= RESET =================
     public void viderChamps() {
+
         txtMarque.setText("");
         txtModele.setText("");
         txtImmatriculation.setText("");
         txtImage.setText("");
         txtEtat.setText("");
+
+        btModifier.setEnabled(false);
+        btSupprimer.setEnabled(false);
     }
 
+    // ================= LABEL =================
     public void actualiserLabel() {
         lbNBVehicules.setText("Nombre de véhicules : " + unTableau.getRowCount());
     }
