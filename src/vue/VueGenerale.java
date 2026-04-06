@@ -41,10 +41,10 @@ public class VueGenerale extends JFrame implements ActionListener {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
         this.setLayout(null);
-        this.getContentPane().setBackground(Color.gray);
+        this.getContentPane().setBackground(Color.decode("#165763"));
 
         // ================= MENU =================
-        this.panelMenu.setBackground(Color.gray);
+        this.panelMenu.setBackground(Color.decode("#165763"));
         this.panelMenu.setBounds(100, 20, 800, 30);
         this.panelMenu.setLayout(new GridLayout(1, 6, 10, 10));
 
