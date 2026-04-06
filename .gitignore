@@ -1,2 +1,7 @@
-bin/ 
-*.class 
+*.log
+hs_err_pid*
+bin/
+*.class
+.settings/
+.project
+.classpath
